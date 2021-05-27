@@ -49,6 +49,22 @@
          <xsl:map-entry key="4" select="'four again'"/>
       </xsl:map>
    </xsl:variable>
+
+   <xsl:variable name="map-2" as="map(xs:string, item())" select="map { 'a' : map { 'x' : 1, 'y' : 2 }, 'b' : 2 }"/>
+
+   <xsl:variable name="map-2-after-test1-tan-map-put2" select="tan:map-put2($map-2, 'z', 3, '?a')"/>
+
+   <xsl:variable name="map-2-after-test2-tan-map-put2" select="tan:map-put2($map-2, 'z', 3, '.')"/>
+
+   <xsl:variable name="map-3" as="map(*)"
+                 select="map { 'a' : 1,
+                               'items' : [
+                                  map { 'name': 'item1', 'categories' : ['cat1', 'cat3'], 'price' : 2.5 },
+                                  map { 'name': 'item2', 'categories' : ['cat2', 'cat3'], 'price' : 1.2 },
+                                  map { 'name': 'item3', 'categories' : ['cat1', 'cat4'], 'price' : 5.6 }
+                                ] }"/>
+
+   <xsl:variable name="map-3-after-test1-tan-map-put2" select="tan:map-put2($map-3, 'price', 20, '?items?*[?categories = ''cat3'']')"/>
    
    <!-- Here we take the map and apply to it shallow copying that treats the map like a tree. 
       (In XSLT 3.0 the default mode shallow-copy actually deep copies the entire map or array.) -->
@@ -84,7 +100,7 @@
       </xsl:if>
    </xsl:template>
    
-   <xsl:template match="/">
+   <xsl:template match="/" name="xsl:initial-template">
       <diagnostics>
          <!-- Serialize the map and its arrays. It's nice to be able to read the maps and arrays in a tree structure. -->
          <map-1><xsl:copy-of select="tan:map-to-xml($map-1, true())"/></map-1>
@@ -125,7 +141,17 @@
             the level-2 map will have its entry with key 4 replaced. -->
          <map-1-put-own-map-entries-alongside-5-5><xsl:copy-of select="tan:map-to-xml(tan:map-put($map-1, $map-1, 0, 5.5))"/></map-1-put-own-map-entries-alongside-5-5>
          
-         
+         <map-2-after-test1-tan-map-put2>
+            <xsl:value-of select="serialize($map-2-after-test1-tan-map-put2, map { 'method' : 'json', 'indent' : true() })"/>
+         </map-2-after-test1-tan-map-put2>
+
+         <map-2-after-test2-tan-map-put2>
+            <xsl:value-of select="serialize($map-2-after-test2-tan-map-put2, map { 'method' : 'json', 'indent' : true() })"/>
+         </map-2-after-test2-tan-map-put2>
+
+         <map-3-after-test1-tan-map-put2>
+            <xsl:value-of select="serialize($map-3-after-test1-tan-map-put2, map { 'method' : 'json', 'indent' : true() })"/>
+         </map-3-after-test1-tan-map-put2>
          <!-- The examples above illustrate practical benefits I've gotten from incorporating
             these extended map functions in XSLT applications I've been writing. They merely 
             scratch the surface of what's possible, in my opinion. No doubt others can do much 

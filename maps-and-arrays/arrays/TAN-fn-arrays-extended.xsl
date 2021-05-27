@@ -30,7 +30,7 @@
       </xsl:for-each>
    </xsl:template>
    
-   <xsl:template match=".[. instance of array(*)]" priority="-1" mode="tan:shallow-copy tan:map-put tan:map-remove">
+   <xsl:template match=".[. instance of array(*)]" priority="-1" mode="tan:shallow-copy tan:map-put tan:map-remove tan:map-put2">
       <xsl:param name="array-member-numbers" as="xs:integer*" tunnel="yes"/>
       <!--<xsl:param name="map-entry-keys" tunnel="yes" as="xs:anyAtomicType*"/>-->
       <xsl:variable name="context-array" as="array(*)" select="."/>

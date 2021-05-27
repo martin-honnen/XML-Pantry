@@ -36,7 +36,7 @@
       </xsl:for-each>
    </xsl:template>
    
-   <xsl:template match=".[. instance of map(*)]" priority="-1" mode="tan:shallow-copy tan:map-put tan:array-to-map">
+   <xsl:template match=".[. instance of map(*)]" priority="-1" mode="tan:shallow-copy tan:map-put tan:array-to-map tan:map-put2">
       <xsl:param name="map-entry-keys" tunnel="yes" as="xs:anyAtomicType*"/>
       <xsl:variable name="context-map" as="map(*)" select="."/>
       <xsl:map>
@@ -577,8 +577,7 @@
       </xsl:apply-templates>
 
    </xsl:function>
-   
-   
+
    <xsl:mode name="tan:map-put" on-no-match="shallow-copy"/>
    
    <xsl:template match=".[. instance of map(*)]" mode="tan:map-put">
@@ -637,10 +636,62 @@
          </xsl:otherwise>
       </xsl:choose>
    </xsl:template>
-   
-   
-   
-   
+
+   <xsl:function name="tan:map-put2" as="map(*)" visibility="public">
+      <!-- Input: a map; an atomic type representing a key for a new map entry; any items,
+         representing the value for a new map entry; a string, specifying
+         an XPath 3.1 path that must select the target map.
+      -->
+      <!-- Output: the input map, but with a new map entry at each map selected by the
+         fourth parameter -->
+      <!-- If a key exists already in a target map, the new entry replaces the current one, otherwise
+         it is added as a new map entry. -->
+      <!-- This function parallels map:put(), but allows for deep placement of entries. This function
+         was written to support a more DRY-friendly approach to creating maps for transform(), which
+         has submaps that might need to be altered and refactored, depending on various conditions. -->
+
+      <xsl:param name="map" as="map(*)"/>
+      <xsl:param name="key" as="xs:anyAtomicType"/>
+      <xsl:param name="value" as="item()*"/>
+      <xsl:param name="target-path" as="xs:string?"/>
+
+      <xsl:variable name="target-maps" as="map(*)*">
+         <xsl:evaluate xpath="$target-path" context-item="$map"/>
+      </xsl:variable>
+
+      <xsl:choose>
+         <xsl:when test="empty($target-maps)">
+            <xsl:sequence select="$map"/>
+         </xsl:when>
+         <xsl:otherwise>
+            <xsl:apply-templates select="$map" mode="tan:map-put2">
+               <xsl:with-param name="key" tunnel="yes" select="$key"/>
+               <xsl:with-param name="value" tunnel="yes" select="$value"/>
+               <xsl:with-param name="target-maps" tunnel="yes" select="$target-maps"/>
+            </xsl:apply-templates>
+         </xsl:otherwise>
+      </xsl:choose>
+
+   </xsl:function>
+
+   <xsl:mode name="tan:map-put2" on-no-match="shallow-copy"/>
+
+   <xsl:template match=".[. instance of map(*)]" mode="tan:map-put2">
+      <xsl:param name="key" tunnel="yes" as="xs:anyAtomicType"/>
+      <xsl:param name="value" tunnel="yes" as="item()*"/>
+      <xsl:param name="target-maps" tunnel="yes" as="map(*)*"/>
+
+      <xsl:choose>
+         <xsl:when test="some $target in $target-maps satisfies deep-equal($target, .)">
+            <xsl:sequence select="map:put(., $key, $value)"/>
+         </xsl:when>
+         <xsl:otherwise>
+            <xsl:next-match/>
+         </xsl:otherwise>
+      </xsl:choose>
+
+   </xsl:template>
+
    <xsl:function name="tan:map-contains" visibility="public" as="xs:boolean">
       <!-- Input: a map; a sequence of items -->
       <!-- Output: true if the map, or any map it contains, has a key identical to one of the items,
