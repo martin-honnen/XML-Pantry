@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "price": 2.5,
+      "name": "item1",
+      "categories": [ "cat1","cat3" ]
+    },
+    {
+      "price": 1.2,
+      "name": "item2",
+      "categories": [ "cat2","cat3" ]
+    },
+    {
+      "price": 5.6,
+      "name": "item3",
+      "categories": [ "cat1","cat4" ]
+    }
+  ],
+  "a": 1
+}

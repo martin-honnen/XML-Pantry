@@ -1,0 +1,1 @@
+transform(map { 'stylesheet-location' : resolve-uri('maps-and-arrays-module.xsl', static-base-uri() || '/./'), 'cache' : true(), 'initial-function' : QName('tag:textalign.net,2015:ns', 'tan:map-put2'), 'function-params' : [., 'price', 20, '?items?*[?categories = ''cat3'']'], 'delivery-format' : 'raw' })?output
